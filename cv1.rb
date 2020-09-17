@@ -9,7 +9,7 @@ def lexer(str)
     raise("More than 2 parts in the equation") if splitted_equation.length() != 2
     normalized_equation = splitted_equation.map { |el| el.split("|") }
                                    .map { |el| el.filter { |e| !e.empty? }}
-                                   .map { |el| el.map {|e| e.gsub("--", "-") }}
+                                   .map { |el| el.map {|e| e.gsub("--", "") }}
 
     return normalized_equation
 end
@@ -19,39 +19,48 @@ end
 def parser(elements)
     
     # minimized_equation = { x_2: 0, x_1: 0, x_0: 0 }
-
-    puts "\n------DEBUG-EL----"
-    print elements
-    puts "\n------DEBUG-----"
+    
+    #DEBUG puts "e: |#{e}|"
+    # puts "\n------DEBUG-EL----"
+    # print elements
+    # puts "\n------DEBUG-----"
 
     # Array that will contain the 2d arrays of parsed data
     array_hash_2d = elements.map.with_index { |el, i|
-        el.map { |e|
-            
-            #DEBUG puts "e: |#{e}|"
+        
+        tmp_hash = {}
+        el.each { |e|
 
             # Check that the letter X is present
             raise("Put an X variable my dear") unless e.match?(/\*X\^/)
             # Check that the multiplier is a number
             raise("Put a real int please") if e.match(/^((?:|[+-])\d*)\*/).nil?
-            ##DEBUG raise("Put a real int please") if e.match(/((?:|[+-])\d*)\*/)[1].empty?
-            
             # Check that the exponent is a number
             raise("Put a real exponent please") if e.match(/\^((?:|[+-])\d*)$/).nil?
 
-            # Create hash + collect exponent and 
-            tmp_hash = Hash.new()
+            # Create hash + collect exponent and slope coefficient
             exponent = e.split("^")[1].to_i
             slope_coeff = e.split("*")[0].to_i
             tmp_hash["x_#{exponent}"] = slope_coeff
-            
-            # return the hash
-            tmp_hash
 
         }
+
+        tmp_hash
     }
+
+    minimized_equation = Hash.new(0)
+    puts "\n----------DG-----\n"
+    array_hash_2d[0].each { |key, value| minimized_equation[key] += value }
+    array_hash_2d[1].each { |key, value| minimized_equation[key] -= value }
+
+    minimized_equation = minimized_equation.filter {|key, value| value != 0 }
+
+    print minimized_equation
+    # puts "\n----------DEBBBUUUUUGGG-FLAT-----\n"
     
-    print array_hash_2d
+    # print array_hash_2d
+
+
         # Array containing the hashes of all str
         # array_hash = []
         # puts "\n------EL-----"
@@ -83,12 +92,12 @@ def main()
 
     print("Enter your input: ")
     str = gets.chomp
-    begin
+    # begin
         execute(str)
-    rescue => e
-        puts "\nError: \"#{e}\""
-        exit 1
-    end
+    # rescue => e
+    #     puts "\nError: \"#{e}\""
+    #     exit 1
+    # end
 
 end
 

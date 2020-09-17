@@ -19,7 +19,7 @@ end
 def parser(elements)
 
     # Array that will contain the 2d arrays of parsed data
-    array_hash_2d = elements.map.with_index { |el, i|
+    array_hash_2d = elements.map { |el|
         
         tmp_hash = {}
         el.each { |e|
@@ -27,7 +27,6 @@ def parser(elements)
             # Check that the letter X is present
             raise("Put an X variable my dear") unless e.match?(/\*X\^/)
             # Check that the multiplier is an int (or a float)
-            # raise("Put a real int please") if e.match(/^((?:|[+-])\d*)\*/).nil? # <- works with int
             raise("Put a real int please") if e.match(/^((?:|[+-])(\d+(\.\d+)?))\*/).nil?
             # Check that the exponent is an int
             raise("Put a valid exponent please") if e.match(/\^((?:|[+-])\d*)$/).nil?
@@ -50,7 +49,7 @@ def parser(elements)
     array_hash_2d[1].each { |key, value| minimized_equation[key] -= value }
     # Remove keys that compensated
     minimized_equation = minimized_equation.filter {|key, value| value != 0 }
-
+    # Check that the remaining keys are valid
     minimized_equation.each { |key, value|
         raise("Put a valid exponent please") if key != "x_0" && key != "x_1" && key != "x_2" 
     }

@@ -9,7 +9,7 @@ def lexer(str)
     raise("2 parts expected in the equation") if splitted_equation.length() != 2
     normalized_equation = splitted_equation.map { |el| el.split("|") }
                                    .map { |el| el.filter { |e| !e.empty? }}
-                                   .map { |el| el.map {|e| e.gsub("--", "") }}
+                                   .map { |el| el.map {|e| e.gsub("--", "").gsub("-+", "-") }}
 
     return normalized_equation
 end
@@ -33,11 +33,18 @@ def parser(elements)
                 # Create hash + collect exponent and slope coefficient
                 exponent = e.split("^")[1].to_i
                 slope_coeff = e.split("*")[0].to_f
-                tmp_hash["x_#{exponent}"] = slope_coeff
+
+                # Add similar keys together, or create when new
+                if tmp_hash["x_#{exponent}"].nil?
+                    tmp_hash["x_#{exponent}"] = slope_coeff else tmp_hash["x_#{exponent}"] += slope_coeff end
 
             }
         tmp_hash
     }
+
+    # puts "debuuug"
+    # print(array_hash_2d)
+    # puts "debuuug"
 
     # Create minimized datastruct 
     minimized_equation = Hash.new(0)
@@ -49,26 +56,29 @@ def parser(elements)
     minimized_equation = minimized_equation.filter { |key, value| value != 0 }
     # Check that the remaining keys are valid
     minimized_equation.each { |key, value|
-        raise("Put a valid exponent please") if key != "x_0" && key != "x_1" && key != "x_2" 
+        raise("Put a valid exponent please (valid polynomial degree)") if key != "x_0" && key != "x_1" && key != "x_2" 
     }
     
     return minimized_equation
 
 end
 
-def print_minimized(datastruct)
+def print_minimized_and_degree(datastruct, degree)
 
-    l = -> (number) { a = if number >= 0 then" + " else " - " end ; return a }
+    l = -> (number) { a = if number >= 0 then " + " else " - " end ; return a }
+    l_max = -> (number) { a = if number >= 0 then "" else "-" end ; return a }
     c = -> (number) { a = if number < 0 then number * -1 else number end ; return a }
+    
+    max_key = datastruct.keys.max
 
-    str = "The reduced form is : "
+    str = "\nThe reduced form is : "
 
     str += "#{datastruct["x_2"]}x²" unless datastruct["x_2"].nil?
     
     
-    ["x_1","x_0"].each | el | do
+    ["x_1","x_0"].each do | el |
         unless datastruct[el].nil? then
-            str += l.call(datastruct[el])
+            str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
             str += "#{c.call(datastruct[el])}"
             str += "x" if el == "x_1"
         end
@@ -77,13 +87,19 @@ def print_minimized(datastruct)
     str += " = 0"
 
     puts str
+    puts "Polynomial degree: #{degree}"
+
 end
 
 def execute(str)
     
+    exponent = -> (dt) { if dt["x_2"].nil? && dt["x_1"].nil? then 0 elsif dt["x_2"].nil? then 1 else 2 end }
+
     normalized_equation = lexer(str)
     datastruct = parser(normalized_equation)
-    print_minimized(datastruct)
+    degree = exponent.call(datastruct)
+    print_minimized_and_degree(datastruct, degree)
+    
     print datastruct
 
 end

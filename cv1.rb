@@ -63,13 +63,10 @@ def print_minimized_and_degree(datastruct, degree)
     l_max = -> (number) { a = if number >= 0 then "" else "-" end ; return a }
     c = -> (number) { a = if number < 0 then number * -1 else number end ; return a }
     
-    # For print issues, check which key in hash is the max
     max_key = datastruct.keys.max
-
     str = "\nThe reduced form is : "
 
     str += "#{datastruct["x_2"].round(5)}x²" unless datastruct["x_2"].nil?
-
     ["x_1","x_0"].each do | el |
         unless datastruct[el].nil? then
             str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
@@ -77,10 +74,7 @@ def print_minimized_and_degree(datastruct, degree)
             str += "x" if el == "x_1"
         end
     end
-
-    # If no key are present (when they were all filtered -> case f(x) => `0 = 0`)
     str += "0" if max_key.nil?
-
     str += " = 0"
 
     puts str
@@ -88,14 +82,12 @@ def print_minimized_and_degree(datastruct, degree)
 
 end
 
-def solve_c(datastruct, degree)
-
+def solve_c(datastruct)
      if datastruct["x_0"].nil? then
             puts "All Real numbers are valid" else puts "No solution possible" end
-
 end
   
-def solve_linear(datastruct, degree)
+def solve_linear(datastruct)
 
     b = datastruct["x_1"]
     c = if datastruct["x_0"].nil? then 0 else datastruct["x_0"] end
@@ -103,7 +95,7 @@ def solve_linear(datastruct, degree)
 
 end
 
-def solve_second_degree(datastruct, degree)
+def solve_second_degree(datastruct)
 
     my_sqrt = -> (nb) { i = 0.00001; while (i*i) < nb do i += 0.00001 end ; return i.to_f().round(5) }
     discriminant = -> (a,b,c) { b*b - 4*a*c }
@@ -139,11 +131,7 @@ def execute(str)
     datastruct = parser(normalized_equation)
     degree = exponent.call(datastruct)
     print_minimized_and_degree(datastruct, degree)
-    
-    # DEBUG
-    # print datastruct
-    
-    functions[degree].call(datastruct, degree)
+    functions[degree].call(datastruct)
 
 end
 

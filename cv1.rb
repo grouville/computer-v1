@@ -14,8 +14,6 @@ def lexer(str)
     return normalized_equation
 end
 
-
-
 def parser(elements)
 
     # Array that will contain the 2d arrays of parsed data
@@ -42,10 +40,6 @@ def parser(elements)
         tmp_hash
     }
 
-    # puts "debuuug"
-    # print(array_hash_2d)
-    # puts "debuuug"
-
     # Create minimized datastruct 
     minimized_equation = Hash.new(0)
     # Add values left of equation to datastruct
@@ -69,20 +63,23 @@ def print_minimized_and_degree(datastruct, degree)
     l_max = -> (number) { a = if number >= 0 then "" else "-" end ; return a }
     c = -> (number) { a = if number < 0 then number * -1 else number end ; return a }
     
+    # For print issues, check which key in hash is the max
     max_key = datastruct.keys.max
 
     str = "\nThe reduced form is : "
 
-    str += "#{datastruct["x_2"]}x²" unless datastruct["x_2"].nil?
-    
-    
+    str += "#{datastruct["x_2"].round(5)}x²" unless datastruct["x_2"].nil?
+
     ["x_1","x_0"].each do | el |
         unless datastruct[el].nil? then
             str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
-            str += "#{c.call(datastruct[el])}"
+            str += "#{c.call(datastruct[el].round(5))}"
             str += "x" if el == "x_1"
         end
     end
+
+    # If no key are present (when they were all filtered -> case f(x) => `0 = 0`)
+    str += "0" if max_key.nil?
 
     str += " = 0"
 
@@ -91,16 +88,62 @@ def print_minimized_and_degree(datastruct, degree)
 
 end
 
+def solve_c(datastruct, degree)
+
+     if datastruct["x_0"].nil? then
+            puts "All Real numbers are valid" else puts "No solution possible" end
+
+end
+  
+def solve_linear(datastruct, degree)
+
+    b = datastruct["x_1"]
+    c = if datastruct["x_0"].nil? then 0 else datastruct["x_0"] end
+    puts "The solution is : #{(-c/b).round(5)}"
+
+end
+
+def solve_second_degree(datastruct, degree)
+
+    my_sqrt = -> (nb) { i = 0.00001; while (i*i) < nb do i += 0.00001 end ; return i.to_f().round(5) }
+    discriminant = -> (a,b,c) { b*b - 4*a*c }
+    getter = -> (dt, key) { if dt[key].nil? then 0 else dt[key] end }
+
+    a = datastruct["x_2"]
+    b = getter.call(datastruct, "x_1")
+    c = getter.call(datastruct, "x_0")
+
+    delta = discriminant.call(a,b,c)
+    alpha = -b / (2 * a)
+
+    if delta < 0 then
+        puts "Delta < 0"
+        sqrt = my_sqrt.call(-delta) / (2 * a)
+        puts "The two solutions are : \n#{alpha} + i * #{sqrt}  \n#{alpha} - i * #{sqrt}"
+    elsif delta == 0 then
+        puts "Delta == 0 | solution : #{alpha}"
+    else
+        puts "Delta > 0"
+        sqrt = my_sqrt.call(delta) / (2 * a)
+        puts "The two solutions are : \n#{alpha + sqrt}  \n#{alpha - sqrt}"
+    end
+
+end
+
 def execute(str)
     
     exponent = -> (dt) { if dt["x_2"].nil? && dt["x_1"].nil? then 0 elsif dt["x_2"].nil? then 1 else 2 end }
+    functions = [method(:solve_c), method(:solve_linear), method(:solve_second_degree)]
 
     normalized_equation = lexer(str)
     datastruct = parser(normalized_equation)
     degree = exponent.call(datastruct)
     print_minimized_and_degree(datastruct, degree)
     
-    print datastruct
+    # DEBUG
+    # print datastruct
+    
+    functions[degree].call(datastruct, degree)
 
 end
 

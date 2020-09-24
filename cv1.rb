@@ -54,11 +54,11 @@ end
 
 def print_minimized_and_degree(datastruct)
 
+    exponent = -> (dt) { if dt.nil? || dt.length == 0 then 0 else datastruct.keys.max[2..].to_f.ceil end }
     l = -> (number) { a = if number >= 0 then " + " else " - " end ; return a }
     l_max = -> (number) { a = if number >= 0 then "" else "-" end ; return a }
     c = -> (number) { a = if number < 0 then number * -1 else number end ; return a }
-    print_x = -> (el) { if el > "x_0" then if el == "x_1" then "x" elsif el == "x_2" then "x²" else "x^#{el[2..].to_f.ceil}" end else "" end }
-    exponent = -> (dt) { if dt.nil? || dt.length == 0 then 0 else datastruct.keys.max[2..].to_f.ceil end }
+    print_x = -> (el) { if el == "x_1" then "x" elsif el == "x_2" then "x²" else "x^#{el[2..].to_f.ceil}" end }
     
     degree = exponent.call(datastruct)
     max_key = datastruct.keys.max
@@ -68,7 +68,7 @@ def print_minimized_and_degree(datastruct)
     keys.each do | el |
             str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
             str += "#{c.call(datastruct[el].round(5))}"
-            str += print_x.call(el)
+            str += if el > "x_0" then print_x.call(el) else "" end 
     end
     str += "0" if max_key.nil?
     str += " = 0"

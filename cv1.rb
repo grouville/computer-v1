@@ -57,6 +57,7 @@ def print_minimized_and_degree(datastruct)
     l = -> (number) { a = if number >= 0 then " + " else " - " end ; return a }
     l_max = -> (number) { a = if number >= 0 then "" else "-" end ; return a }
     c = -> (number) { a = if number < 0 then number * -1 else number end ; return a }
+    print_x = -> (el) { if el > "x_0" then if el == "x_1" then "x" elsif el == "x_2" then "x²" else "x^#{el[2..].to_f.ceil}" end else "" end }
     exponent = -> (dt) { if dt.nil? || dt.length == 0 then 0 else datastruct.keys.max[2..].to_f.ceil end }
     
     degree = exponent.call(datastruct)
@@ -67,15 +68,7 @@ def print_minimized_and_degree(datastruct)
     keys.each do | el |
             str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
             str += "#{c.call(datastruct[el].round(5))}"
-            str += if el > "x_0" then
-                        if el == "x_1" then
-                            "x"
-                        elsif el == "x_2" then
-                            "x²"
-                        else
-                            "x^#{el[2..].to_f.ceil}"
-                        end
-                    else "" end
+            str += print_x.call(el)
     end
     str += "0" if max_key.nil?
     str += " = 0"
@@ -86,10 +79,6 @@ def print_minimized_and_degree(datastruct)
     raise("Put a valid exponent please (valid polynomial degree)") if degree > 2
 
     puts "Polynomial degree: #{degree}"
-    # # Check that the remaining keys are valid
-    # datastruct.each { |key, value|
-    #     raise("Put a valid exponent please (valid polynomial degree)") if key != "x_0" && key != "x_1" && key != "x_2" 
-    # }
 
 end
 

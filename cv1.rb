@@ -89,8 +89,10 @@ def print_minimized_and_degree(datastruct)
 end
 
 def solve_c(datastruct)
-     if datastruct[0].nil? then
-        puts "All Real numbers are valid" else puts "No solution possible" end
+
+    if datastruct[0].nil? then
+    puts "All Real numbers are valid" else puts "No solution possible" end
+
 end
   
 def solve_linear(datastruct)

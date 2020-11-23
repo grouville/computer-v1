@@ -33,8 +33,8 @@ def parser(elements)
                 slope_coeff = e.split("*")[0].to_f
 
                 # Add similar keys together, or create when new
-                if tmp_hash["x_#{exponent}"].nil?
-                    tmp_hash["x_#{exponent}"] = slope_coeff else tmp_hash["x_#{exponent}"] += slope_coeff end
+                if tmp_hash[exponent].nil?
+                    tmp_hash[exponent] = slope_coeff else tmp_hash[exponent] += slope_coeff end
 
             }
         tmp_hash
@@ -54,11 +54,11 @@ end
 
 def print_minimized_and_degree(datastruct)
 
-    exponent = -> (dt) { if dt.nil? || dt.length == 0 then 0 else datastruct.keys.max[2..].to_f.ceil end }
+    exponent = -> (dt) { if dt.nil? || dt.length == 0 then 0 else datastruct.keys.max.ceil end }
     l = -> (number) { a = if number >= 0 then " + " else " - " end ; return a }
     l_max = -> (number) { a = if number >= 0 then "" else "-" end ; return a }
     c = -> (number) { a = if number < 0 then number * -1 else number end ; return a }
-    print_x = -> (el) { if el == "x_1" then "x" elsif el == "x_2" then "x²" else "x^#{el[2..].to_f.ceil}" end }
+    print_x = -> (el) { if el == 1 then "x" elsif el == 2 then "x²" else "x^#{el.ceil}" end }
     
     degree = exponent.call(datastruct)
     max_key = datastruct.keys.max
@@ -68,7 +68,7 @@ def print_minimized_and_degree(datastruct)
     keys.each do | el |
             str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
             str += "#{c.call(datastruct[el].round(5))}"
-            str += if el > "x_0" then print_x.call(el) else "" end 
+            str += if el > 0 then print_x.call(el) else "" end 
     end
     str += "0" if max_key.nil?
     str += " = 0"
@@ -83,14 +83,14 @@ def print_minimized_and_degree(datastruct)
 end
 
 def solve_c(datastruct)
-     if datastruct["x_0"].nil? then
+     if datastruct[0].nil? then
             puts "All Real numbers are valid" else puts "No solution possible" end
 end
   
 def solve_linear(datastruct)
 
-    b = datastruct["x_1"]
-    c = if datastruct["x_0"].nil? then 0 else datastruct["x_0"] end
+    b = datastruct[1]
+    c = if datastruct[0].nil? then 0 else datastruct[0] end
     puts "The solution is : #{(-c/b).round(5)}"
 
 end
@@ -101,9 +101,9 @@ def solve_second_degree(datastruct)
     discriminant = -> (a,b,c) { b*b - 4*a*c }
     getter = -> (dt, key) { if dt[key].nil? then 0 else dt[key] end }
 
-    a = datastruct["x_2"]
-    b = getter.call(datastruct, "x_1")
-    c = getter.call(datastruct, "x_0")
+    a = datastruct[2]
+    b = getter.call(datastruct, 1)
+    c = getter.call(datastruct, 0)
 
     delta = discriminant.call(a,b,c)
     alpha = -b / (2 * a)
@@ -124,7 +124,7 @@ end
 
 def execute(str)
     
-    degree = -> (dt) { if dt["x_2"].nil? && dt["x_1"].nil? then 0 elsif dt["x_2"].nil? then 1 else 2 end }
+    degree = -> (dt) { if dt[2].nil? && dt[1].nil? then 0 elsif dt[2].nil? then 1 else 2 end }
     functions = [method(:solve_c), method(:solve_linear), method(:solve_second_degree)]
 
     normalized_equation = lexer(str)

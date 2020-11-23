@@ -26,7 +26,7 @@ def parser(elements)
                 # Check that the multiplier is an int (or a float)
                 raise("Put a real int please") if e.match(/^((?:|[+-])(\d+(\.\d+)?))\*/).nil?
                 # Check that the exponent is an int
-                raise("Put a valid exponent please") if e.match(/\^(\d*)$/).nil?
+                raise("Put a valid exponent please") if e.match(/\^(?:|-)(\d*)$/).nil?
 
                 # Create hash + collect exponent and slope coefficient
                 exponent = e.split("^")[1].to_i
@@ -35,11 +35,10 @@ def parser(elements)
                 # Add similar keys together, or create when new
                 if tmp_hash[exponent].nil?
                     tmp_hash[exponent] = slope_coeff else tmp_hash[exponent] += slope_coeff end
-
             }
         tmp_hash
     }
-
+    
     # Create minimized datastruct 
     minimized_equation = Hash.new(0)
     # Add values left of equation to datastruct
@@ -62,29 +61,36 @@ def print_minimized_and_degree(datastruct)
     
     degree = exponent.call(datastruct)
     max_key = datastruct.keys.max
+    min_key = datastruct.keys.min
+    exp_0 = nil
+    if !datastruct[0].nil? then
+        exp_0 = datastruct[0]
+        datastruct.delete(0)
+    end
     keys = datastruct.keys.sort.reverse
 
     str = "\nThe reduced form is : "
     keys.each do | el |
             str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
             str += "#{c.call(datastruct[el].round(5))}"
-            str += if el > 0 then print_x.call(el) else "" end 
+            str += if el != 0 then print_x.call(el) else "" end 
+    end
+    if !exp_0.nil? then
+        str += (exp_0 == max_key) ? l_max.call(exp_0) : l.call(exp_0)
+        str += "#{c.call(exp_0.round(5))}"
     end
     str += "0" if max_key.nil?
     str += " = 0"
-
     puts str
 
-    print "Polynomial degree: #{degree} > 2" if degree > 2
-    raise("Put a valid exponent please (valid polynomial degree)") if degree > 2
-
+    raise("Put a valid exponent please (valid polynomial degree)") if degree > 2 || min_key < 0
     puts "Polynomial degree: #{degree}"
 
 end
 
 def solve_c(datastruct)
      if datastruct[0].nil? then
-            puts "All Real numbers are valid" else puts "No solution possible" end
+        puts "All Real numbers are valid" else puts "No solution possible" end
 end
   
 def solve_linear(datastruct)

@@ -26,10 +26,10 @@ def parser(elements)
                 # Check that the multiplier is an int (or a float)
                 raise("Put a real int please") if e.match(/^((?:|[+-])(\d+(\.\d+)?))\*/).nil?
                 # Check that the exponent is an int
-                raise("Put a valid exponent please") if e.match(/\^(?:|-)(\d*)$/).nil?
+                raise("Put a valid exponent please") if e.match(/\^-?\d+$/).nil?
 
                 # Create hash + collect exponent and slope coefficient
-                exponent = e.split("^")[1].to_i
+                exponent = e.match(/\^-?\d+$/)[0][1..].to_i
                 slope_coeff = e.split("*")[0].to_f
 
                 # Add similar keys together, or create when new
@@ -61,12 +61,8 @@ def print_minimized_and_degree(datastruct)
     
     degree = exponent.call(datastruct)
     max_key = datastruct.keys.max
-    min_key = datastruct.keys.min
-    exp_0 = nil
-    if !datastruct[0].nil? then
-        exp_0 = datastruct[0]
-        datastruct.delete(0)
-    end
+    cpy_dt = datastruct.clone
+    datastruct.delete(0)
     keys = datastruct.keys.sort.reverse
 
     str = "\nThe reduced form is : "
@@ -75,17 +71,18 @@ def print_minimized_and_degree(datastruct)
             str += "#{c.call(datastruct[el].round(5))}"
             str += if el != 0 then print_x.call(el) else "" end 
     end
-    if !exp_0.nil? then
-        str += (exp_0 == max_key) ? l_max.call(exp_0) : l.call(exp_0)
-        str += "#{c.call(exp_0.round(5))}"
+    if !datastruct[0].nil? then
+        str += (datastruct[0] == max_key) ? l_max.call(datastruct[0]) : l.call(datastruct[0])
+        str += "#{c.call(datastruct[0].round(5))}"
     end
     str += "0" if max_key.nil?
     str += " = 0"
     puts str
 
-    raise("Put a valid exponent please (valid polynomial degree)") if degree > 2 || min_key < 0
+    raise("Put a valid exponent please (valid polynomial degree)") if degree > 2 || datastruct.keys.min < 0
     puts "Polynomial degree: #{degree}"
-
+    
+    return cpy_dt
 end
 
 def solve_c(datastruct)
@@ -108,11 +105,10 @@ def solve_second_degree(datastruct)
     my_sqrt = -> (nb) { i = 0.00001; while (i*i) < nb do i += 0.00001 end ; return i.to_f().round(5) }
     discriminant = -> (a,b,c) { b*b - 4*a*c }
     getter = -> (dt, key) { if dt[key].nil? then 0 else dt[key] end }
-
+    
     a = datastruct[2]
     b = getter.call(datastruct, 1)
     c = getter.call(datastruct, 0)
-
     delta = discriminant.call(a,b,c)
     alpha = -b / (2 * a)
 
@@ -137,7 +133,7 @@ def execute(str)
 
     normalized_equation = lexer(str)
     datastruct = parser(normalized_equation)
-    print_minimized_and_degree(datastruct)
+    datastruct = print_minimized_and_degree(datastruct)
     functions[degree.call(datastruct)].call(datastruct)
 
 end

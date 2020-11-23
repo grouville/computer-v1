@@ -22,11 +22,11 @@ def parser(elements)
             el.each { |e|
 
                 # Check that the letter X is present
-                raise("Put an X variable my dear") unless e.match?(/\*X\^/)
+                raise("Please put an X variable") unless e.match?(/\*X\^/)
                 # Check that the multiplier is an int (or a float)
-                raise("Put a real int please") if e.match(/^((?:|[+-])(\d+(\.\d+)?))\*/).nil?
+                raise("Please put a real int please") if e.match(/^((?:|[+-])(\d+(\.\d+)?))\*/).nil?
                 # Check that the exponent is an int
-                raise("Put a valid exponent please") if e.match(/\^-?\d+$/).nil?
+                raise("Please put a valid format of exponent") if e.match(/\^-?\d+$/).nil?
 
                 # Create hash + collect exponent and slope coefficient
                 exponent = e.match(/\^-?\d+$/)[0][1..].to_i
@@ -61,25 +61,27 @@ def print_minimized_and_degree(datastruct)
     
     degree = exponent.call(datastruct)
     max_key = datastruct.keys.max
+    min_key = datastruct.keys.min
     cpy_dt = datastruct.clone
     datastruct.delete(0)
+    max_key2 = datastruct.keys.max
     keys = datastruct.keys.sort.reverse
 
     str = "\nThe reduced form is : "
     keys.each do | el |
-            str += (el == max_key) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
+            str += (el == max_key2) ? l_max.call(datastruct[el]) : l.call(datastruct[el])
             str += "#{c.call(datastruct[el].round(5))}"
             str += if el != 0 then print_x.call(el) else "" end 
     end
-    if !datastruct[0].nil? then
-        str += (datastruct[0] == max_key) ? l_max.call(datastruct[0]) : l.call(datastruct[0])
-        str += "#{c.call(datastruct[0].round(5))}"
+    if !cpy_dt[0].nil? then
+        str += (0 == max_key && min_key >= 0) ? l_max.call(cpy_dt[0]) : l.call(cpy_dt[0])
+        str += "#{c.call(cpy_dt[0].round(5))}"
     end
     str += "0" if max_key.nil?
     str += " = 0"
     puts str
 
-    raise("Put a valid exponent please (valid polynomial degree)") if degree > 2 || datastruct.keys.min < 0
+    raise("Put a valid exponent please (valid polynomial degree)") if degree > 2 || (!min_key.nil? && min_key < 0)
     puts "Polynomial degree: #{degree}"
     
     return cpy_dt
@@ -145,7 +147,8 @@ def main
     begin
         execute(str)
     rescue => e
-        puts "\nError: \"#{e}\""
+        puts "Error: \"#{e}\""
+        # puts e.backtrace 
         exit 1
     end
 
